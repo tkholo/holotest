@@ -1,7 +1,7 @@
 echo "INIT top"
 echo "INIT starting psql"
 pg_ctlcluster 15 main start
-sleep 30
+sleep 20
 echo "INIT startiung nginx"
 service nginx start
 

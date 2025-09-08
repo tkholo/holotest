@@ -1,8 +1,12 @@
+python API
+.	basic cmd wrapper in python to call the wsgi entpoints
 add new functionality
-	delete/rest db
+.	delete/reset db
 	retrieve file names/ids
 	get data by file id
 		- somewhat obviated by datatables
 	get errors by file id
 		- somewhat obviated by datatables
 	delete stuff by file id
+	allow the UI to ingest files located inside the container, like the test_1000 file?
+		perms stuff...

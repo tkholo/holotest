@@ -1,9 +1,9 @@
 echo "INIT top"
-echo "INIT startiung nginx"
-service nginx start
 echo "INIT starting psql"
 pg_ctlcluster 15 main start
 sleep 30
+echo "INIT startiung nginx"
+service nginx start
 
 export psql_db=h2
 export psql_password=h2

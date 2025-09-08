@@ -19,12 +19,12 @@
     <form id="dataform"  enctype="multipart/form-data" method="post">
         <button type="submit">Fetch Data</button>
     </form>
-    <table id="dataTable">
+    <table id="dataTable"></table>
     <p></p>
     <form id="errorform"  enctype="multipart/form-data" method="post">
         <button type="submit">Fetch Errors</button>
     </form>
-    <table id="errorTable">
+    <table id="errorTable"></table>
     <p></p>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -108,22 +108,31 @@
             formData.append('cmd', 'get_errors')
             //formData.append('file_id', this isn't currently in use, but would pull for just one submitted file
 	    console.log("err formdata: " + formData);
-            try {
+            try
+	    {
                 const response = await fetch('http://localhost:8080/holo', {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!response.ok) {
+                if (!response.ok)
+		{
                     status.textContent = 'ERROR RETRIEVING ROWS!';
                 }
+		else
+		{
+		    status.textContent = 'GOT ROWS';
+		}
 
 		const data = await response.json();
-                if (!data || !Array.isArray(data) || data.length === 0) {
+		//console.log("got json back");
+                if (!data || !Array.isArray(data) || data.length === 0)
+		{
                     document.getElementById('status').textContent = 'No errors received!';
                     //document.getElementById('status').className = 'error';
                     return;
                 }
+		//console.log("got real data back");
 
                 // Initialize DataTables
                 const table = $('#errorTable').DataTable({
@@ -133,9 +142,12 @@
                     pageLength: 20, // Rows per page
                     responsive: true
                 });
+		//console.log("table updated");
             } catch (error) {
                 status.textContent = 'Error: ' + error.message;
+		//console.log("error");
             }
+	    //console.log("out");
 	});
         document.getElementById('delform').addEventListener('submit', async (event) => {
             event.preventDefault(); // Prevent default form submission

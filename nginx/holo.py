@@ -204,7 +204,7 @@ def parse_wsgi(environ):
 def del_all(form_data):
     mys_trunc_cdr_data = "TRUNCATE cdr_data"
     mys_trunc_cdr_file = "TRUNCATE cdr_file"
-    mys_trunc_error    = "TRUNCATE errors"
+    mys_trunc_errors   = "TRUNCATE errors"
 
     try:
         mys.store(mys_trunc_cdr_data, {})

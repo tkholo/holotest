@@ -9,12 +9,7 @@ from datetime import datetime
 from cdr_ops import parse_line
 
 
-logfile = open("/tmp/app.log","a")
-def logprint(msg):
-    logfile.write(msg)
-    logfile.write("\n")
-    logfile.flush()
-
+#set up a dummy db interface for local testing
 if __name__ == "__main__":        
     class Mys():
         def __init__(self, a):
@@ -33,6 +28,7 @@ if __name__ == "__main__":
     mys = Mys(environ)
     mys_cur = None
 else:
+    #real db interface for actual work
     from mysd import Mys
     import psycopg2.extras as extras
     exec_vals = extras.execute_values
@@ -40,6 +36,7 @@ else:
     mys = Mys(environ)
     mys_cur = mys.mys_con.cursor()
 
+#define some db queries
 mys_get_cdr_data_by_file_id = "SELECT * FROM cdr_data WHERE file_id = %(file_id)s"
 mys_get_cdr_data_all = "SELECT file_id, cdr_id, mnc, bytes_used, cell_id, ip, dmcc FROM cdr_data"
 mys_get_errors_all = "SELECT file_id, raw_text, err_msg FROM errors"
@@ -59,6 +56,7 @@ mys_store_cdr_data_bulk = "INSERT INTO cdr_data ( file_id, cdr_id, mnc, bytes_us
 #        "ip VARCHAR(20) , " \
 #        "dmcc VARCHAR(32) " \
 
+#parse file data and store in db
 def submit_file(form_data):
     file_obj = form_data['file']
     #print("GOT FILE DATA: {}: {}".format(file_obj, type(file_obj)))
@@ -89,7 +87,7 @@ def submit_file(form_data):
             print("ERROR PARSING CDR DATA LINE {} : {}".format(line, cdr_data['errmsg']))
             vals = {
                 'file_id'  : str_datetime,
-                'raw_text' : line.strip(),
+                'raw_text' : line,
                 'err_msg'  : cdr_data['errmsg']
             }
             mys.store(mys_store_error, vals)
@@ -121,6 +119,7 @@ def submit_file(form_data):
     mys.mys_con.commit()
     return json.dumps(report)
 
+#returns a list of dicts of objects in db
 def get_all_data(form_data):
     rets = []
     #no parms needed?
@@ -138,10 +137,12 @@ def get_all_data(form_data):
         rets.append(drowdict)
     return json.dumps(rets)
 
+#not yet in use, takes a file id and only returns data from that file
 def get_data_by_file_id(form_data):
     file_id = form_data['file_id']
     pass
 
+#returns all errors in db
 def get_errors(file_data):
     rets = []
     error_rows = mys.query_all(mys_get_errors_all, {})
@@ -153,27 +154,7 @@ def get_errors(file_data):
         })
     return json.dumps(rets)
 
-def sz_query(form_data):
-    si = form_data
-    ##OK, PARMS REQUIRED FOR id_pkg and cmp_pkg
-    parms = {}
-    if 'parms' in si:
-        parms = si.pop('parms')
-        #if 'id_pkg' in parms:
-        #    parms.pop('id_pkg')
-        #id_pkg  = parms.get('id_pkg',default_id_pkg)
-    #print("GOT PARMS: {}".format(parms))
-    rets = sz_proc(si, parms.get('enabled_name_search_options',{}))
-
-    #print("prejs")
-    jsonret = json.dumps(erets)
-    #jsonret = json.dumps(llr_results)
-    #print("preuni")
-    utfret  = jsonret.encode('utf8')
-    #print("preret")
-
-    return utfret
-
+#parse our form data
 from cgi import FieldStorage
 def parse_wsgi(environ):
     try:
@@ -213,12 +194,13 @@ def parse_wsgi(environ):
         ret['file'] = filedict
 
     #bdata = json.loads(ret)
-    #logprint("got form_data: {}".format(bdata))
+    #print("got form_data: {}".format(bdata))
     return ret
     #except Exception as ex:
     #    print("__ERROR__: bad data format: {}",ex)
     #    return None
 
+#completely empty the db
 def del_all(form_data):
     mys_trunc_cdr_data = "TRUNCATE cdr_data"
     mys_trunc_cdr_file = "TRUNCATE cdr_file"
@@ -232,7 +214,7 @@ def del_all(form_data):
     except Exception as ex:
         return "FAILED: {}".format(ex)
 
-
+#all valid commands and the functions they call
 commands = {
     'submit_file' : submit_file,
     'get_all_data' : get_all_data,
@@ -241,10 +223,11 @@ commands = {
     'delete_all_data' : del_all
 }
 
+#main app
 def application(environ, start_response):
-    #logprint("app")
-    #logprint("environ: {}".format(environ))
-    #logger.info("environ: {}".format(environ))
+    #print("app")
+    #print("environ: {}".format(environ))
+    #cors junk, ducked for now by enforcing 8080
     print("Access-Control-Allow-Origin: *")  # Allow all origins (or specify e.g., "http://localhost:3000")
     print("Access-Control-Allow-Methods: POST, OPTIONS")  # Allow POST and OPTIONS
     print("Access-Control-Allow-Headers: Content-Type")  # Allow Content-Type header
@@ -252,8 +235,7 @@ def application(environ, start_response):
     print()
 
     inp = environ.get('wsgi.input',{})
-    #logprint("inp: {}".format(inp))
-    #logger.info("inp: {}".format(inp))
+    #print("inp: {}".format(inp))
 
     form_data = parse_wsgi(environ)
     print("APP FORM DATA: {}".format(form_data))
@@ -296,12 +278,10 @@ def application(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/html')])
     return [resp]
 
-logprint("on")
+print("on")
 
-#mys_store_cdr_data = "INSERT INTO cdr_data ( file_id, cdr_id, mnc, bytes_used, cell_id, ip, dmcc ) VALUES ( %(fid)s, %(cdrid)s, %(mnc)s, %(bytes)s, %(cellid)s, %(ip)s, %(dmcc)s ) "
+#coerce data in to a specific order
 cdr_val_order = [ 'file_id', 'cdr_id', 'mnc', 'bytes_used', 'cell_id', 'ip', 'dmcc' ]
-#s(['dmcc', 'mnc', 'bytes_used', 'cell_id', 'ip', 'cdr_id', 'file_id'])
-
 def order_vals(vals):
     ret = ()
     for vo in cdr_val_order:
@@ -309,11 +289,13 @@ def order_vals(vals):
 
     return ret
 
+#batch commit data to db
 def commit_cache(value_cache):
     print("exec_vals is {}".format(exec_vals))
     exec_vals(mys_cur, mys_store_cdr_data_bulk, value_cache)
     mys.mys_con.commit()
 
+#test code
 if __name__ == "__main__":        
     _, testfile = sys.argv
 

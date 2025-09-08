@@ -1,5 +1,4 @@
 
-
 def parse_extended(toks):
     #<id>,<dmcc>,<mnc>,<bytes_used>,<cellid>
     if len(toks) != 5:
@@ -21,6 +20,7 @@ def parse_extended(toks):
         'ip' : None
     }
 
+#handle the ip part of the hex
 def parse_hex_ip(hexip):
     quads = []
     for i in range(4):
@@ -79,7 +79,7 @@ def parse_basic(toks):
         'mnc'        : None,
         'cell_id'    : None,
         'ip'         : None
-     }
+    }
 
 
 cdr_parsers = {
@@ -87,6 +87,7 @@ cdr_parsers = {
     6 : parse_hex,
 }
 
+#main parse call.  could use a full try wrapper for more robustness
 def parse_line(line):
     #print("parsing line: {}".format(line))
     if "," not in line:

@@ -1,1 +1,8 @@
-add noisy data for testing error cases
+add new functionality
+	delete/rest db
+	retrieve file names/ids
+	get data by file id
+		- somewhat obviated by datatables
+	get errors by file id
+		- somewhat obviated by datatables
+	delete stuff by file id

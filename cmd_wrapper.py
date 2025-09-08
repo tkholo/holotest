@@ -1,4 +1,4 @@
-from sys import argv
+from sys import argv, exit
 import requests
 
 
@@ -8,6 +8,7 @@ try:
     cmd = argv[2]
 except:
     print("python {} url command <parm>".format(argv[0]))
+    exit(-1)
 
 try:
     if cmd == 'submit_file':
@@ -16,6 +17,7 @@ try:
         _, url, cmd = argv
 except:
     print("python {} url command <parm>".format(argv[0]))
+    exit(-2)
 
 if cmd == 'submit_file':
     data = {

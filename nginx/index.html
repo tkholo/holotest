@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOLO UI</title>
+</head>
+<body>
+    <h1>Holo UI</h1>
+    <form id="uploadForm" enctype="multipart/form-data" method="post">
+        <input type="file" id="fileInput" name="file">
+        <button type="submit">Upload</button>
+    </form>
+    <p id="status"></p>
+    <form id="dataform"  enctype="multipart/form-data" method="post">
+        <button type="submit">Fetch Data</button>
+    </form>
+    <table id="dataTable">
+    <p></p>
+    <form id="errorform"  enctype="multipart/form-data" method="post">
+        <button type="submit">Fetch Errors</button>
+    </form>
+    <table id="errorTable">
+    <p></p>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+
+            if (!fileInput.files.length) {
+                status.textContent = 'Please select a file!';
+                return;
+            }
+
+            formData = new FormData();
+	    formData.append('cmd', 'submit_file')
+            formData.append('file', fileInput.files[0]);
+	    console.log("formdata: " + formData)
+
+            try {
+                const response = await fetch('/holo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+		resp_text = await(response.text())
+
+                if (response.ok) {
+                    status.textContent = 'File uploaded successfully: ' + resp_text;
+                } else {
+                    status.textContent = 'Upload failed: ' + resp_text;
+                }
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+            }
+        });
+        document.getElementById('dataform').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+            const status = document.getElementById('status');
+	    formData = new FormData();
+            formData.append('cmd', 'get_all_data')
+            //formData.append('file_id', this isn't currently in use, but would pull for just one submitted file
+	    console.log("formdata: " + formData)
+            try {
+                const response = await fetch('http://localhost:8080/holo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    status.textContent = 'ERROR RETRIEVING ROWS!';
+                }
+
+		const data = await response.json();
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    document.getElementById('status').textContent = 'No data received!';
+                    document.getElementById('status').className = 'error';
+                    return;
+                }
+
+                // Initialize DataTables
+                const table = $('#dataTable').DataTable({
+                    destroy: true, // Clear previous table data if any
+                    data: data,
+                    columns: Object.keys(data[0]).map(key => ({ title: key, data: key })),
+                    pageLength: 20, // Rows per page
+                    responsive: true
+                });
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+            }
+	});
+        document.getElementById('errorform').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+            const status = document.getElementById('status');
+	    formData = new FormData();
+            formData.append('cmd', 'get_errors')
+            //formData.append('file_id', this isn't currently in use, but would pull for just one submitted file
+	    console.log("formdata: " + formData)
+            try {
+                const response = await fetch('http://localhost:8080/holo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    status.textContent = 'ERROR RETRIEVING ROWS!';
+                }
+
+		const data = await response.json();
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    document.getElementById('status').textContent = 'No data received!';
+                    document.getElementById('status').className = 'error';
+                    return;
+                }
+
+                // Initialize DataTables
+                const table = $('#errorTable').DataTable({
+                    destroy: true, // Clear previous table data if any
+                    data: data,
+                    columns: Object.keys(data[0]).map(key => ({ title: key, data: key })),
+                    pageLength: 20, // Rows per page
+                    responsive: true
+                });
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+            }
+	});
+    </script>
+</body>
+</html>

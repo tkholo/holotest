@@ -1,0 +1,30 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Simple script to start a program at boot
+### END INIT INFO
+
+PIDFILE=/run/holo.pid
+
+case "$1" in
+start)
+echo "Starting holo query"
+start-stop-daemon --start --verbose --background -m --pidfile $PIDFILE --chdir /var/www/wsgi --chuid holo -g www-data --exec /usr/local/bin/uwsgi -- --lazy-apps --ini holo.ini --enable-threads --logger file:/tmp/uwsgi.log
+;;
+stop)
+echo "Stopping holo query"
+# kill application you want to stop
+#killall wsgi
+start-stop-daemon --stop --pidfile $PIDFILE
+#--quiet --chdir /var/www/wsgi -u alert -g www-data --exec "uwsgi --ini alert.ini"
+;;
+*)
+echo "Usage: /etc/init.d/holo_wsgi {start|stop}"
+exit 1
+;;
+esac
+
+exit 0
+

@@ -114,7 +114,9 @@ RUN echo "RUNNING TESTS" \
     && bash /opt/data/test_get_data.sh \
     && bash /opt/data/test_get_errors.sh \
     #&& wget --tries=1 --post-data '{"cmd":"get_all_data","parms":{}}' http://localhost/holo -O /tmp/holo1 || : \
-    && curl -X POST  -F "cmd=get_all_data"  http://localhost/holo
+    && curl -X POST  -F "cmd=get_all_data"  http://localhost/holo \
+    && echo "test complete, reverting tables" \
+    && curl -X POST  -F "cmd=delete_all_data"  http://localhost/holo \
     && echo "wgets done" \
     && cat /tmp/holo1 \
     #&& cat /tmp/holo2 \

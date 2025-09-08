@@ -1,0 +1,7 @@
+
+building:
+sudo docker build -t h1 .
+
+
+running:
+sudo docker run --name h1 -d -p 8080:80 -i -t h1

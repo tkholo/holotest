@@ -198,7 +198,7 @@ def parse_wsgi(environ):
     ret['cmd'] = request_body.getvalue('cmd')
     #print("PWSGI ret: {}".format(ret))
 
-    
+
     if 'file' in request_body:
         #print("GOT A FILE: {}".format(request_body['file']))
         #filedata = request_body['file'].pop()
@@ -218,13 +218,27 @@ def parse_wsgi(environ):
     #except Exception as ex:
     #    print("__ERROR__: bad data format: {}",ex)
     #    return None
-    
+
+def del_all(form_data):
+    mys_trunc_cdr_data = "TRUNCATE cdr_data"
+    mys_trunc_cdr_file = "TRUNCATE cdr_file"
+    mys_trunc_error    = "TRUNCATE errors"
+
+    try:
+        mys.store(mys_trunc_cdr_data, {})
+        mys.store(mys_trunc_cdr_file, {})
+        mys.store(mys_trunc_errors,   {})
+        return "SUCCESS"
+    except Exception as ex:
+        return "FAILED: {}".format(ex)
+
 
 commands = {
     'submit_file' : submit_file,
     'get_all_data' : get_all_data,
     'get_data_by_file_id' : get_data_by_file_id,
-    'get_errors' : get_errors
+    'get_errors' : get_errors,
+    'delete_all_data' : del_all
 }
 
 def application(environ, start_response):

@@ -6,10 +6,12 @@ sudo docker build -t h1 .
 running:
 sudo docker run --name h1 -d -p 8080:80 -i -t h1
 
+there is a conservative 20sec delay between the container starting and nginx being available
+
 
 other options:
-there is a python script 
-generate_test_data.py
+there is a python script:
+generate_test_data.py filename count
 with no deps outside random() and /dev/urandom that can generate random data in bulk.  this is run on setup to create a 1000 row file inside the container.
 
 this can be ingested in to the database via the ui, or calling nginx/test_file_upload.sh from within the container, or a similar script/command against port 8080 from outside the container or the cmd_wrapper.py
@@ -17,3 +19,9 @@ this can be ingested in to the database via the ui, or calling nginx/test_file_u
 there is a sample file test_data_err_20.txt that contains many errors that can be ingested to test those routes
 
 python cmd_wrapper.py can be used to hit the endpoint from python.  it takes a url, a command, and when applicable (currently just the file name for submit_file), a parameter
+
+these all run very basic curl commands to run/test bnasic commands
+test_file_upload.sh
+test_get_data.sh
+test_get_errors.sh
+

@@ -118,7 +118,7 @@ RUN echo "RUNNING TESTS" \
     && echo "test complete, reverting tables" \
     && curl -X POST  -F "cmd=delete_all_data"  http://localhost/holo \
     && echo "wgets done" \
-    && cat /tmp/holo1 \
+    #&& cat /tmp/holo1 \
     #&& cat /tmp/holo2 \
     && cat /var/log/nginx/error.log \
     && cat /var/log/nginx/access.log \

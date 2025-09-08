@@ -7,6 +7,10 @@
 </head>
 <body>
     <h1>Holo UI</h1>
+    <form id="delform"  enctype="multipart/form-data" method="post">
+        <button type="submit">Delete/Reset DB Data</button>
+    </form>
+    <p></p>
     <form id="uploadForm" enctype="multipart/form-data" method="post">
         <input type="file" id="fileInput" name="file">
         <button type="submit">Upload</button>
@@ -21,10 +25,6 @@
         <button type="submit">Fetch Errors</button>
     </form>
     <table id="errorTable">
-    <p></p>
-    <form id="delform"  enctype="multipart/form-data" method="post">
-        <button type="submit">Delete/Reset DB Data</button>
-    </form>
     <p></p>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -46,7 +46,7 @@
             formData = new FormData();
 	    formData.append('cmd', 'submit_file')
             formData.append('file', fileInput.files[0]);
-	    console.log("formdata: " + formData)
+	    console.log("submit formdata: " + formData)
 
             try {
                 const response = await fetch('/holo', {
@@ -71,7 +71,7 @@
 	    formData = new FormData();
             formData.append('cmd', 'get_all_data')
             //formData.append('file_id', this isn't currently in use, but would pull for just one submitted file
-	    console.log("formdata: " + formData);
+	    console.log("data formdata: " + formData);
             try {
                 const response = await fetch('http://localhost:8080/holo', {
                     method: 'POST',
@@ -85,7 +85,7 @@
 		const data = await response.json();
                 if (!data || !Array.isArray(data) || data.length === 0) {
                     document.getElementById('status').textContent = 'No data received!';
-                    document.getElementById('status').className = 'error';
+                    //document.getElementById('status').className = 'error';
                     return;
                 }
 
@@ -107,7 +107,7 @@
 	    formData = new FormData();
             formData.append('cmd', 'get_errors')
             //formData.append('file_id', this isn't currently in use, but would pull for just one submitted file
-	    console.log("formdata: " + formData);
+	    console.log("err formdata: " + formData);
             try {
                 const response = await fetch('http://localhost:8080/holo', {
                     method: 'POST',
@@ -120,8 +120,8 @@
 
 		const data = await response.json();
                 if (!data || !Array.isArray(data) || data.length === 0) {
-                    document.getElementById('status').textContent = 'No data received!';
-                    document.getElementById('status').className = 'error';
+                    document.getElementById('status').textContent = 'No errors received!';
+                    //document.getElementById('status').className = 'error';
                     return;
                 }
 
@@ -142,19 +142,23 @@
             const status = document.getElementById('status');
             formData = new FormData();
             formData.append('cmd', 'delete_all_data');
-            console.log("formdata: " + formData);
+            console.log("delformdata: " + formData);
             try {
                 const response = await fetch('http://localhost:8080/holo', {
                     method: 'POST',
                     body: formData
                 });
 
+		const resptext = await response.text();
+
                 if (!response.ok) {
                     status.textContent = 'ERROR DELETING ROWS!';
                 }
 		else
 		{
-		    status.textContent = "DB now empty";
+		    status.textContent = resptext + " DB now empty";
+                    $("#errorTable").DataTable().clear().draw();
+                    $("#dataTable").DataTable().clear().draw();
 		}
 
             } catch (error) {

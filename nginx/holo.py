@@ -79,7 +79,7 @@ def submit_file(form_data):
     for line in lines:
         if len(line.strip()) <= 0:
             #empty line
-            pass
+            continue
 
         cnt += 1
         cdr_data = parse_line(line.strip())

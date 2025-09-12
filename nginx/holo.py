@@ -144,6 +144,12 @@ def get_data_by_file_id(form_data):
 
 #returns all errors in db
 def get_errors(file_data):
+    filter = None
+    if 'parms' in file_data:
+        parms = file_data['parms']
+        if 'file_id' in parms:
+            filter = parms['file_id']
+            print("filter on id {}".format(filter))
     rets = []
     error_rows = mys.query_all(mys_get_errors_all, {})
     for row in error_rows:
@@ -177,6 +183,15 @@ def parse_wsgi(environ):
     #print("REQ BODY: {}: {}".format(type(request_body), request_body))
 
     ret['cmd'] = request_body.getvalue('cmd')
+
+    parms_str = request_body.getvalue('parms')
+    print("parms str: {}, {}".format(parms_str, type(parms_str)))
+    try:
+        parms = json.loads(parms_str)
+        ret['parms'] = parms
+    except Exception as ex:
+        print("FAILED TO READ PARMS JSON FORM {}, {}".format(parms_str, ex))
+
     #print("PWSGI ret: {}".format(ret))
 
 

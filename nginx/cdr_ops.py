@@ -21,14 +21,28 @@ def parse_extended(toks):
     }
 
 #handle the ip part of the hex
-def parse_hex_ip(hexip):
-    quads = []
-    for i in range(4):
-        hval = hexip[ i : i+2 ]
-        hint = int(hval, 16)
-        quads.append(str(hint))
+def parse_hex_ip(hexip, ip_type):
+    if ip_type == 4:
+        quads = []
+        for i in range(4):
+            hval = hexip[ i : i+2 ]
+            hint = int(hval, 16)
+            quads.append(str(hint))
 
-    ipval = '.'.join(quads)
+        ipval = '.'.join(quads)
+    elif ip_type == 6:
+        #if this comes in as hex, we just insert colons
+        #if the spec is binary, the below code should be correct
+        octs = []
+        for i in range(8):
+            hval = hexip[i : i+2]
+            print("looking at {}".format(hval))
+            octv = "{}{}".format(hval[0].hex(), hval[1].hex())
+            octs.append(hval)
+        ipval = ':'.join(octv)
+
+    else:
+        print("HOW DID WE GET HERE? {}: {}".format(hexip, ip_type))
 
     return ipval
 
@@ -37,8 +51,14 @@ def parse_hex(toks):
         return { 'errmsg' : "INVALID TOKEN COUNT {} FOR HEX, EXPECTED 2".format(len(toks)) }
 
     hexdata = toks[1]
-    if len(hexdata) != 24:
-        return { 'errmsg' : "INVALID HEX LEN {} FOR HEX STRING, EXPECTED 24".format(len(hexdata)) }
+
+    ip_type = None
+    if len(hexdata) == 24:
+        ip_type = 4
+    elif len(hexdata) == 36:
+        ip_type = 6
+    else:
+        return { 'errmsg' : "INVALID HEX LEN {} FOR HEX STRING, EXPECTED 24 or 32".format(len(hexdata)) }
 
     mnc     = hexdata[0:4]
     bytecnt = hexdata[4:8]
@@ -52,7 +72,7 @@ def parse_hex(toks):
     except:
         return { 'errmsg' : "FAILED TO INT PARSE VALUES: {} {} {}".format(mnc, bytecnt, cell_id) }
 
-    parsed_ip = parse_hex_ip(ip)
+    parsed_ip = parse_hex_ip(ip, ip_type)
 
     return {
         'bytes_used' : byteint,
